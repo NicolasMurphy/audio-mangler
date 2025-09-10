@@ -1,10 +1,14 @@
 
+
+# Randomly samples chunks from multiple .wav files and concatenates them
+# first iteration - missing details such as limiting fize size, normalization, 
+# expected length of the chunks, more to follow. 
+
+import os
+import random
 import numpy as np
 from scipy.io import wavfile
-from typing import Tuple
-
-GOLDEN_RATIO = (1 + np.sqrt(5)) / 2
-
+from typing import List, Tuple
 
 def load_audio(filename: str) -> Tuple[int, np.ndarray]:
     """Load WAV file and convert to mono float32"""
@@ -20,25 +24,42 @@ def save_audio(filename: str, sample_rate: int, data: np.ndarray):
     wavfile.write(filename, sample_rate, clipped)
 
 
-def scramble_chunks(
-    data: np.ndarray, chunk_size: int, ratio: float = GOLDEN_RATIO
-) -> np.ndarray:
-    """Reorder audio chunks using golden ratio quasi-random permutation"""
-    num_chunks = len(data) // chunk_size
-    chunks = np.array_split(data[: num_chunks * chunk_size], num_chunks)
-    indices = np.arange(num_chunks)
-    perm = np.argsort(np.cos(indices * np.pi * ratio))
-    scrambled = np.concatenate([chunks[i] for i in perm])
-    return np.append(scrambled, data[num_chunks * chunk_size:])
+def select_random_segment(data: np.ndarray, segment_length: int) -> np.ndarray:
+    """Select a random segment from audio of given length (samples)"""
+    if len(data) <= segment_length:
+        return data
+    start = random.randint(0, len(data) - segment_length)
+    return data[start:start + segment_length]
 
 
-def process_file(input_path: str, output_path: str, chunk_size: int = 2000):
-    """End-to-end scrambler for a WAV file"""
-    rate, audio = load_audio(input_path)
-    scrambled = scramble_chunks(audio, chunk_size)
-    save_audio(output_path, rate, scrambled)
+def gather_random_samples(
+    file_paths: List[str], segment_length: int
+) -> Tuple[int, np.ndarray]:
+    """Extract and concatenate random segments from multiple files"""
+    all_segments = []
+    sample_rate = None
+
+    for path in file_paths:
+        rate, data = load_audio(path)
+        if sample_rate is None:
+            sample_rate = rate
+        elif rate != sample_rate:
+            raise ValueError(f"Sample rate mismatch: {rate} != {sample_rate}")
+        segment = select_random_segment(data, segment_length)
+        all_segments.append(segment)
+
+    return sample_rate, np.concatenate(all_segments)
+
+
+def process_folder(
+    folder: str, output_path: str, segment_length: int = 22050
+):
+    """Sample from all WAVs in a folder and create a concatenated output"""
+    wav_files = [os.path.join(folder, f) for f in os.listdir(folder) if f.endswith(".wav")]
+    rate, result = gather_random_samples(wav_files, segment_length)
+    save_audio(output_path, rate, result)
 
 
 if __name__ == "__main__":
-    process_file("homemade-break-3.wav", "output.wav")
+    process_folder("samples", "output.wav")
 
