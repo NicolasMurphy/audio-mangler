@@ -5,7 +5,8 @@
 `python app.py`
 
 Added UV for python package management. 
- **Summary:**
+ 
+ n/**Summary:**
 
 - Use `uv add numpy scipy` inside a project to add them permanently.
 - Use `uv run numpy scipy` for a quick scratch environment.   
