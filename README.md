@@ -1,17 +1,15 @@
 # Audio Mangler
 
-`pip install -r requirements.txt`
 
-`python app.py`
+UPDATE 9/10/25
 
 Added UV for python package management to be platform agnostic. 
+Created input_folder and output folder for audio piping. Resample all audio to 48khz and create one-second chunks at 48khz. Normalized the files before slicing and skip files over 10mb
 
-UPDATE 9/10/25 
 
-**use this command to exec program**
+You can still use pip - uv is preferred
+`pip install -r requirements.txt'
 
-```uv run python app.py input_folder output_folder/output.wav```
- 
  **Summary:**
 
 - Use `uv add numpy scipy` inside a project to add them permanently.
@@ -93,6 +91,7 @@ That will create a temp venv, install `numpy` and `scipy`, and drop you into a P
 
 
 
+#### This command runs the app:
+
 ```bash
-#run app
-uv run python app.py
+uv run python app.py input_folder output_folder/output.wav```
