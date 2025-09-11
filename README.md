@@ -7,7 +7,9 @@
 Added UV for python package management to be platform agnostic. 
 
 UPDATE 9/10/25 
+
 **use this command to exec program**
+
 ```uv run python app.py input_folder output_folder/output.wav```
  
  **Summary:**
